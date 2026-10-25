@@ -28,10 +28,6 @@ object ErrorMessages {
         const val NOT_FOUND = "Execution not found."
     }
 
-    object Insume {
-        const val NOT_FOUND = "Insume not found."
-        fun notFoundById(id: UUID) = "Insume not found: $id"
-    }
 
     object Invoice {
         const val NOT_FOUND = "Invoice not found."

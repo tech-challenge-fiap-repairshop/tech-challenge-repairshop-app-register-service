@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: register-service-config
+  namespace: repairshop
+  labels:
+    app: register-service
+    env: dev
+data:
+  SPRING_APPLICATION_NAME: register-service
+  SERVER_PORT: "8081"
+  SPRING_PROFILES_ACTIVE: dev
+  SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/repairshop
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: "6379"
+  SERVICE_ORDER_SERVICE_URL: http://service-order-execution-service:8080
+  SQS_HEALTH_CHECK_ENABLED: "false"
+  LOGGING_LEVEL_COM_CAO_REPAIRSHOP: DEBUG

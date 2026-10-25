@@ -47,9 +47,6 @@ class SecurityConfig(
                 authorize(HttpMethod.POST, "/service-orders/*/approve", hasAnyRole(UserRole.ATTENDANT.name, UserRole.CUSTOMER.name))
                 authorize("/service-orders/**", hasRole(UserRole.ATTENDANT.name))
 
-                // Inventory/Insumes: Attendant only
-                authorize("/insumes/**", hasRole(UserRole.ATTENDANT.name))
-
                 // Invoices: Attendant only
                 authorize("/invoices/**", hasRole(UserRole.ATTENDANT.name))
 

@@ -2,7 +2,6 @@ package com.cao.repairshop.register.infra.client
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -27,11 +26,10 @@ data class ServiceOrderResponse(
 @Component
 class ServiceOrderClient(
     @Value("\${repairshop.service-order.url:http://localhost:8080}")
-    private val serviceOrderBaseUrl: String,
-    restTemplateBuilder: RestTemplateBuilder
+    private val serviceOrderBaseUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val restTemplate: RestTemplate = restTemplateBuilder.build()
+    private val restTemplate: RestTemplate = RestTemplate()
 
     fun createServiceOrder(customerId: UUID, vehicleId: UUID, description: String?): ServiceOrderResponse? {
         val url = "$serviceOrderBaseUrl/service-orders"

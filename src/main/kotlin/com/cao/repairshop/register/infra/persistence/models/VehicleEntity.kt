@@ -2,7 +2,6 @@ package com.cao.repairshop.register.infra.persistence.models
 
 import com.cao.repairshop.register.domain.entities.Plate
 import com.cao.repairshop.register.infra.persistence.models.converter.PlateConverter
-import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -39,10 +38,6 @@ class VehicleEntity(
 
     @Column(name = "last_maintenance")
     var lastMaintenance: LocalDateTime? = null,
-
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
-    @JoinColumn(name = "vehicle_id", insertable = false, updatable = false)
-    var serviceOrders: MutableSet<ServiceOrderEntity> = mutableSetOf(),
 
     @CreationTimestamp
     @Column(nullable = false)

@@ -155,17 +155,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: |
-            target/site/jacoco/
-            target/jacoco.exec
-          retention-days: 1
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: target/surefire-reports/
+          path: target/site/jacoco/jacoco.xml
           retention-days: 1
 
   # ==========================================================================
@@ -199,7 +189,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
-          path: target/
+          path: target/site/jacoco/
 
       - name: SonarCloud Scan
         env:

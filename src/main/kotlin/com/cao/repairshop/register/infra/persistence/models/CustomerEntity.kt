@@ -1,11 +1,9 @@
 package com.cao.repairshop.register.infra.persistence.models
 
-import com.cao.repairshop.payment.infra.persistence.models.InvoiceEntity
 import com.cao.repairshop.register.domain.entities.Document
 import com.cao.repairshop.register.domain.entities.Email
 import com.cao.repairshop.register.infra.persistence.models.converter.DocumentConverter
 import com.cao.repairshop.register.infra.persistence.models.converter.EmailConverter
-import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -39,13 +37,6 @@ data class CustomerEntity(
 
     @OneToMany(mappedBy = "customer", cascade = [CascadeType.ALL], orphanRemoval = true)
     var vehicles: MutableSet<VehicleEntity> = mutableSetOf(),
-
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
-    @JoinColumn(name = "customer_id", insertable = false, updatable = false)
-    var serviceOrders: MutableSet<ServiceOrderEntity> = mutableSetOf(),
-
-    @OneToMany(mappedBy = "customer", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var invoices: MutableSet<InvoiceEntity> = mutableSetOf(),
 
     @CreationTimestamp
     @Column(nullable = false)

@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: register-postgres
+    environment:
+      POSTGRES_USER: repairshop
+      POSTGRES_PASSWORD: repairshop
+      POSTGRES_DB: repairshop
+    ports:
+      - "5432:5432"
+    volumes:
+      - register-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repairshop"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: register-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  register-service:
+    build: .
+    container_name: register-service-standalone
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/repairshop
+      SPRING_DATASOURCE_USERNAME: repairshop
+      SPRING_DATASOURCE_PASSWORD: repairshop
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SERVICE_ORDER_SERVICE_URL: http://localhost:8080
+      # OpenTelemetry
+      OTEL_SERVICE_NAME: register-service
+      OTEL_TRACES_EXPORTER: none
+      OTEL_METRICS_EXPORTER: prometheus
+      OTEL_LOGS_EXPORTER: none
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  register-postgres-data:

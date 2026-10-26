@@ -1,5 +1,6 @@
 package com.cao.repairshop.register.infra.client
 
+import com.cao.repairshop.register.domain.ServiceOrderExistenceChecker
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
@@ -27,9 +28,29 @@ data class ServiceOrderResponse(
 class ServiceOrderClient(
     @Value("\${repairshop.service-order.url:http://localhost:8080}")
     private val serviceOrderBaseUrl: String
-) {
+) : ServiceOrderExistenceChecker {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val restTemplate: RestTemplate = RestTemplate()
+
+    override fun existsByCustomerId(customerId: UUID): Boolean {
+        val url = "$serviceOrderBaseUrl/service-orders?customerId=$customerId"
+        return runCatching {
+            val response = restTemplate.getForObject(url, String::class.java)
+            response != null && response != "[]"
+        }.onFailure { ex ->
+            logger.warn("Falha ao checar ordens de serviço por cliente {}: {}", customerId, ex.message)
+        }.getOrDefault(false)
+    }
+
+    override fun existsByVehicleId(vehicleId: UUID): Boolean {
+        val url = "$serviceOrderBaseUrl/service-orders?vehicleId=$vehicleId"
+        return runCatching {
+            val response = restTemplate.getForObject(url, String::class.java)
+            response != null && response != "[]"
+        }.onFailure { ex ->
+            logger.warn("Falha ao checar ordens de serviço por veículo {}: {}", vehicleId, ex.message)
+        }.getOrDefault(false)
+    }
 
     fun createServiceOrder(customerId: UUID, vehicleId: UUID, description: String?): ServiceOrderResponse? {
         val url = "$serviceOrderBaseUrl/service-orders"

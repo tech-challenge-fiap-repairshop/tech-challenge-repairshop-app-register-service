@@ -46,6 +46,15 @@ class VehicleGatewayImplJPATest {
     }
 
     @Test
+    fun `should return null when find by plate is not found`() {
+        val plate = Plate("ZZZ-9999")
+        every { vehicleRepository.findByPlate(plate) } returns null
+
+        val result = vehicleGatewayImplJPA.findByPlate(plate)
+        org.junit.jupiter.api.Assertions.assertNull(result)
+    }
+
+    @Test
     fun `should save vehicle successfully`() {
         val customerId = UUID.randomUUID()
         val vehicle = Vehicle(id = UUID.randomUUID(), customerId = customerId, plate = Plate("ABC-1234"), brand = "Ford", model = "Fiesta")
@@ -74,6 +83,15 @@ class VehicleGatewayImplJPATest {
     }
 
     @Test
+    fun `should return null when find by id is empty`() {
+        val id = UUID.randomUUID()
+        every { vehicleRepository.findById(id) } returns Optional.empty()
+
+        val result = vehicleGatewayImplJPA.findById(id)
+        org.junit.jupiter.api.Assertions.assertNull(result)
+    }
+
+    @Test
     fun `should find all successfully`() {
         val pageable = PageRequest.of(0, 10)
         val customerEntity = mockk<CustomerEntity>(relaxed = true)
@@ -89,6 +107,13 @@ class VehicleGatewayImplJPATest {
         val customerId = UUID.randomUUID()
         every { vehicleRepository.existsByCustomerId(customerId) } returns true
         assertTrue(vehicleGatewayImplJPA.existsByCustomerId(customerId))
+    }
+
+    @Test
+    fun `should return false when customer has no vehicles`() {
+        val customerId = UUID.randomUUID()
+        every { vehicleRepository.existsByCustomerId(customerId) } returns false
+        org.junit.jupiter.api.Assertions.assertFalse(vehicleGatewayImplJPA.existsByCustomerId(customerId))
     }
 
     @Test

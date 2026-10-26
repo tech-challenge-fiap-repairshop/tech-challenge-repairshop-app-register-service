@@ -10,6 +10,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
@@ -37,6 +38,15 @@ class CustomerGatewayImplJPATest {
         val result = customerGatewayImplJPA.findById(id)
         assertNotNull(result)
         assertEquals("John", result?.name)
+    }
+
+    @Test
+    fun `should return null when find by id is empty`() {
+        val id = UUID.randomUUID()
+        every { customerRepository.findById(id) } returns Optional.empty()
+
+        val result = customerGatewayImplJPA.findById(id)
+        assertNull(result)
     }
 
     @Test
@@ -70,6 +80,35 @@ class CustomerGatewayImplJPATest {
         val result = customerGatewayImplJPA.findByEmail(email)
         assertNotNull(result)
         assertEquals("John", result?.name)
+    }
+
+    @Test
+    fun `should return null when find by email is not found`() {
+        val email = Email("missing@example.com")
+        every { customerRepository.findByEmail(email) } returns null
+
+        val result = customerGatewayImplJPA.findByEmail(email)
+        assertNull(result)
+    }
+
+    @Test
+    fun `should find by document successfully`() {
+        val document = Document("12345678909")
+        val customerEntity = CustomerEntity(id = UUID.randomUUID(), name = "John", document = document)
+        every { customerRepository.findByDocument(document) } returns customerEntity
+
+        val result = customerGatewayImplJPA.findByDocument(document)
+        assertNotNull(result)
+        assertEquals("John", result?.name)
+    }
+
+    @Test
+    fun `should return null when find by document is not found`() {
+        val document = Document("52998224725")
+        every { customerRepository.findByDocument(document) } returns null
+
+        val result = customerGatewayImplJPA.findByDocument(document)
+        assertNull(result)
     }
 
     @Test

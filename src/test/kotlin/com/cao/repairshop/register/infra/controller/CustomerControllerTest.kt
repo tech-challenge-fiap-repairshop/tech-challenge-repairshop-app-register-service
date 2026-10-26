@@ -129,6 +129,18 @@ class CustomerControllerTest {
     }
 
     @Test
+    fun `PUT customers by id should return 400 when name is blank`() {
+        val updateRequest = mapOf("name" to "")
+
+        mockMvc.perform(
+            put("/customers/$customerId")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(updateRequest))
+        )
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `DELETE customers by id should return 204`() {
         every { deleteCustomer.execute(customerId) } returns Unit
 

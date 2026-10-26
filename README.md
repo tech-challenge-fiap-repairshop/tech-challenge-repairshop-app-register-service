@@ -36,7 +36,7 @@ Ele faz parte da arquitetura distribuída e poliglota da Fase 4 e se comunica de
 ## 📂 Estrutura de Diretórios
 
 ```
-tech-challenge-repairshop-register-service/
+tech-challenge-repairshop-app-register-service/
 ├── .github/workflows/         # Pipelines de CI/CD (GitHub Actions)
 ├── k8s/                       # Manifestos Kubernetes (Deployment, Service, HPA, ConfigMap)
 ├── src/

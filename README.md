@@ -59,3 +59,13 @@ tech-challenge-repairshop-app-register-service/
 - `homolog`: Branch de homologação e testes integrados.
 - `develop`: Branch de desenvolvimento ativo.
 - `feat/*`, `fix/*`, `chore/*`: Branches de trabalho.
+
+## 🧪 Testes BDD com Cucumber
+
+Os cenários de integração fazem chamadas HTTP para uma instância do serviço em
+porta aleatória e iniciam PostgreSQL e Redis locais com Testcontainers. É
+necessário ter Docker disponível e executar:
+
+```shell
+mvn test -Dtest=CucumberTest
+```

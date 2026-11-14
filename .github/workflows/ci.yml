@@ -241,7 +241,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Determine Target Environment & ECR Repository
+      - name: Determine Target Environment & Ensure ECR Repository
         id: ecr-target
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -254,13 +254,12 @@ jobs:
             TARGET="dev"
           fi
           
-          REPO_NAME=$(aws ecr describe-repositories --region ${{ env.AWS_REGION }} --query "repositories[?contains(repositoryName, 'register-service') && contains(repositoryName, '${TARGET}')].repositoryName" --output text 2>/dev/null | tr '\t' '\n' | head -n 1)
-          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "None" ]; then
-            REPO_NAME=$(aws ecr describe-repositories --region ${{ env.AWS_REGION }} --query "repositories[?contains(repositoryName, 'register-service')].repositoryName" --output text 2>/dev/null | tr '\t' '\n' | head -n 1)
+          REPO_NAME="register-service-${TARGET}"
+          if ! aws ecr describe-repositories --repository-names "$REPO_NAME" --region ${{ env.AWS_REGION }} >/dev/null 2>&1; then
+            echo "Criando repositório ECR '$REPO_NAME'..."
+            aws ecr create-repository --repository-name "$REPO_NAME" --image-scanning-configuration scanOnPush=true --region ${{ env.AWS_REGION }}
           fi
-          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "None" ]; then
-            REPO_NAME="register-service-${TARGET}"
-          fi
+
           echo "target_env=${TARGET}" >> $GITHUB_OUTPUT
           echo "repository_name=${REPO_NAME}" >> $GITHUB_OUTPUT
           echo "Target Environment: ${TARGET}"
@@ -300,7 +299,7 @@ jobs:
     if: |
       needs.docker-build-push.result == 'success' &&
       github.event_name != 'pull_request' &&
-      (github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target_env == 'prd'))
+      (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -348,10 +347,7 @@ jobs:
           ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           ENV_NAME="${{ steps.env-target.outputs.environment }}"
           
-          REPO_NAME=$(aws ecr describe-repositories --region ${{ env.AWS_REGION }} --query "repositories[?contains(repositoryName, 'register-service') && contains(repositoryName, '${ENV_NAME}')].repositoryName" --output text 2>/dev/null | tr '\t' '\n' | head -n 1)
-          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "None" ]; then
-            REPO_NAME="register-service-${ENV_NAME}"
-          fi
+          REPO_NAME="register-service-${ENV_NAME}"
           
           echo "Using Image: ${ECR_REGISTRY}/${REPO_NAME}:latest"
           sed -i "s|image: .*|image: ${ECR_REGISTRY}/${REPO_NAME}:latest|g" k8s/deployment.yaml
@@ -363,6 +359,14 @@ jobs:
           if [ -n "$RDS_HOST" ] && [ "$RDS_HOST" != "None" ]; then
             echo "✅ RDS Host encontrado: $RDS_HOST"
             sed -i "s|localhost:5432|${RDS_HOST}:5432|g" "k8s/configmap/configmap-${ENV_NAME}.yaml"
+          fi
+
+          REDIS_CLUSTER_ID="repairshop-user-login-cache-${ENV_NAME}"
+          REDIS_HOST=$(aws elasticache describe-cache-clusters --cache-cluster-id "${REDIS_CLUSTER_ID}" --show-cache-node-info --region "${{ env.AWS_REGION }}" --query "CacheClusters[0].CacheNodes[0].Endpoint.Address" --output text 2>/dev/null || echo "")
+
+          if [ -n "$REDIS_HOST" ] && [ "$REDIS_HOST" != "None" ]; then
+            echo "✅ Redis Host encontrado: $REDIS_HOST"
+            sed -i "s|SPRING_DATA_REDIS_HOST: .*|SPRING_DATA_REDIS_HOST: ${REDIS_HOST}|g" "k8s/configmap/configmap-${ENV_NAME}.yaml"
           fi
           
           if [ -n "$DB_USERNAME" ]; then

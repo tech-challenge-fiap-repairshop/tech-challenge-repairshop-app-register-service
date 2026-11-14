@@ -38,7 +38,7 @@ spec:
               drop:
                 - ALL
           ports:
-            - containerPort: 8081
+            - containerPort: 8080
               name: http
           env:
             - name: OTEL_SERVICE_NAME
@@ -64,12 +64,12 @@ spec:
                 name: register-service-secret
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 250m
+              memory: 512Mi
               ephemeral-storage: "1Gi"
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 1000m
+              memory: 1Gi
               ephemeral-storage: "2Gi"
           volumeMounts:
             - name: tmp-volume
@@ -81,19 +81,19 @@ spec:
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8081
-            initialDelaySeconds: 25
+              port: 8080
+            initialDelaySeconds: 60
             periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
+            timeoutSeconds: 5
+            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8081
-            initialDelaySeconds: 45
+              port: 8080
+            initialDelaySeconds: 120
             periodSeconds: 15
-            timeoutSeconds: 3
-            failureThreshold: 3
+            timeoutSeconds: 5
+            failureThreshold: 4
       volumes:
         - name: tmp-volume
           emptyDir: {}
